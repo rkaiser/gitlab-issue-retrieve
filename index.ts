@@ -7,13 +7,14 @@ const program = new Command();
 program
     .argument('<string>', 'URL to the gitlab repository including protocol')
     .option('-l, --label <string>', 'gitlab label to search', 'Release')
-    .option('-r, --resource <string>', 'gitlab resource to search, projects or groups', 'projects');
+    .option('-r, --resource <string>', 'gitlab resource to search, projects or groups', 'projects')
+    .option('-f, --file <string>', 'output file', 'file.md');
 program.addOption(new Option('-i, --id <number>', 'id of project or group to search').env('GITLAB_RESOURCE_ID')); // 15124
 program.addOption(new Option('-t, --token <string>', 'token for repo').env('REPO_TOKEN'));
 
 program.parse(process.argv);
 const options = program.opts();
-retrieveIssues(program.args[0], options.resource, options.id, options.label, options.token);
+retrieveIssues(program.args[0], options.resource, options.id, options.label, options.token, options.file);
 
 /**
  * Retrieves the issues and saves them in the file.
@@ -22,8 +23,9 @@ retrieveIssues(program.args[0], options.resource, options.id, options.label, opt
  * @param id is the id for the resource that is being querried.
  * @param label is the labelled that is being requested
  * @param token is the access token that is used to access the gitlab resource
+ * @param file is the output file
  */
-async function retrieveIssues(repoUrl: string, resource: 'groups' | 'projects', id: number, label: string, token: string) {
+async function retrieveIssues(repoUrl: string, resource: 'groups' | 'projects', id: number, label: string, token: string, file: string) {
     const apiUrl = `${repoUrl}/api/v4/${resource}/${id}/issues`;
     let page = 1;
     const issues: any[] = [];
@@ -34,7 +36,7 @@ async function retrieveIssues(repoUrl: string, resource: 'groups' | 'projects', 
         page++;
         responseWithIssues.issues.forEach((issue) => issues.push(issue));
     }
-    const fileWriteStream = fs.createWriteStream(path.join(__dirname, 'file.md'));
+    const fileWriteStream = fs.createWriteStream(path.join(__dirname, file));
     issues.forEach((issue: any) => {
         // Format should look similar to the following in order to paste in to markdown format:
         //  - [IBFE-840](https://path/to/issue/with/id/number) - Issue Title
