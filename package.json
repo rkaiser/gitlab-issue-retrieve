@@ -1,5 +1,5 @@
 {
-  "name": "gitlab-api",
+  "name": "gitlab-issue-retrieve",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
